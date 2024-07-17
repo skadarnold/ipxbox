@@ -1,4 +1,4 @@
-module github.com/fragglet/ipxbox
+module github.com/skadarnold/ipxbox
 
 go 1.17
 

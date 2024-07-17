@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/fragglet/ipxbox/network"
-	"github.com/fragglet/ipxbox/ppp"
+	"github.com/skadarnold/ipxbox/network"
+	"github.com/skadarnold/ipxbox/ppp"
 )
 
 const (

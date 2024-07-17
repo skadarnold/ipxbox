@@ -12,9 +12,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fragglet/ipxbox/ipx"
-	"github.com/fragglet/ipxbox/network"
-	"github.com/fragglet/ipxbox/ppp/lcp"
+	"github.com/skadarnold/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/network"
+	"github.com/skadarnold/ipxbox/ppp/lcp"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"

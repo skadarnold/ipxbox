@@ -7,10 +7,10 @@ import (
 	"flag"
 	"log"
 
-	"github.com/fragglet/ipxbox/client/uplink"
-	"github.com/fragglet/ipxbox/ipx"
-	"github.com/fragglet/ipxbox/network/filter"
-	"github.com/fragglet/ipxbox/phys"
+	"github.com/skadarnold/ipxbox/client/uplink"
+	"github.com/skadarnold/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/network/filter"
+	"github.com/skadarnold/ipxbox/phys"
 )
 
 var (

@@ -3,8 +3,8 @@ package filter
 import (
 	"testing"
 
-	"github.com/fragglet/ipxbox/ipx"
-	ipxtesting "github.com/fragglet/ipxbox/testing"
+	"github.com/skadarnold/ipxbox/ipx"
+	ipxtesting "github.com/skadarnold/ipxbox/testing"
 )
 
 const (

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/fragglet/ipxbox/ipx"
-	"github.com/fragglet/ipxbox/network"
-	"github.com/fragglet/ipxbox/network/pipe"
+	"github.com/skadarnold/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/network"
+	"github.com/skadarnold/ipxbox/network/pipe"
 )
 
 type Network struct {

@@ -3,7 +3,7 @@ package ipxpkt
 import (
 	"time"
 
-	"github.com/fragglet/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/ipx"
 )
 
 const (

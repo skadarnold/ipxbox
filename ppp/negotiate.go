@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fragglet/ipxbox/ppp/lcp"
+	"github.com/skadarnold/ipxbox/ppp/lcp"
 	"github.com/google/gopacket"
 )
 

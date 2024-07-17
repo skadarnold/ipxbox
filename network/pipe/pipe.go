@@ -14,7 +14,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/fragglet/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/ipx"
 )
 
 const (
