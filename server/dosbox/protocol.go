@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fragglet/ipxbox/ipx"
-	"github.com/fragglet/ipxbox/network"
-	"github.com/fragglet/ipxbox/network/stats"
-	"github.com/fragglet/ipxbox/server"
+	"github.com/skadarnold/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/network"
+	"github.com/skadarnold/ipxbox/network/stats"
+	"github.com/skadarnold/ipxbox/server"
 )
 
 var (

@@ -11,8 +11,19 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/fragglet/ipxbox/network"
-	"github.com/fragglet/ipxbox/ppp"
+	"github.com/skadarnold/ipxbox/network"
+	"github.com/skadarnold/ipxbox/ppp"
+		
+	"github.com/skadarnold/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/ipxpkt"
+	"github.com/skadarnold/ipxbox/network/addressable"
+	"github.com/skadarnold/ipxbox/network/filter"
+	"github.com/skadarnold/ipxbox/network/ipxswitch"
+	"github.com/skadarnold/ipxbox/network/stats"
+	"github.com/skadarnold/ipxbox/network/tappable"
+	
+	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcapgo"
 )
 
 const (
@@ -109,6 +120,16 @@ func (c *Connection) Close() error {
 	}
 }
 
+func makePcapWriter() *pcapgo.Writer {
+	f, err := os.Create(*dumpPackets)
+	if err != nil {
+		log.Fatalf("failed to open pcap file for write: %v", err)
+	}
+	w := pcapgo.NewWriter(f)
+	w.WriteFileHeader(1500, layers.LinkTypeEthernet)
+	return w
+}
+
 func (c *Connection) startPPPSession(ctx context.Context, sendCallID uint16) {
 	if c.ppp != nil {
 		return
@@ -123,6 +144,15 @@ func (c *Connection) startPPPSession(ctx context.Context, sendCallID uint16) {
 	}
 	node := c.s.n.NewNode()
 	c.ppp = ppp.NewSession(gre, node)
+
+	//if *dumpPackets != "" {
+		tappableLayer := tappable.Wrap(net)
+		w := makePcapWriter()
+		sink := phys.NewPcapgoSink(w, phys.FramerEthernetII)
+		go ipx.CopyPackets(ctx, tappableLayer.NewTap(), sink)
+		
+		net = tappableLayer
+	//}
 	go func() {
 		err := c.ppp.Run(ctx)
 		if err != nil {

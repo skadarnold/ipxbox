@@ -19,8 +19,8 @@ You may find it convenient to add the above line to `~/.bashrc`.
 The following two commands will fetch ipxbox and all its dependencies, and
 then compile it:
 ```
-go get github.com/fragglet/ipxbox
-go build github.com/fragglet/ipxbox
+go get github.com/skadarnold/ipxbox
+go build github.com/skadarnold/ipxbox
 ```
 If successful, you should now have a compiled binary you can run named `ipxbox`.
 

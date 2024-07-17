@@ -2,7 +2,7 @@
 package network
 
 import (
-	"github.com/fragglet/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/ipx"
 )
 
 // Network represents the concept of an IPX network.

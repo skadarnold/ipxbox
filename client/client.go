@@ -7,8 +7,8 @@ import (
 	"errors"
 	"net"
 
-	"github.com/fragglet/ipxbox/ipx"
-	"github.com/fragglet/ipxbox/network/pipe"
+	"github.com/skadarnold/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/network/pipe"
 )
 
 var (

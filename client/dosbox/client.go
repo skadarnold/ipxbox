@@ -10,10 +10,10 @@ import (
 	"os"
 	"time"
 
-	udpclient "github.com/fragglet/ipxbox/client"
-	"github.com/fragglet/ipxbox/ipx"
-	"github.com/fragglet/ipxbox/network"
-	"github.com/fragglet/ipxbox/network/pipe"
+	udpclient "github.com/skadarnold/ipxbox/client"
+	"github.com/skadarnold/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/network"
+	"github.com/skadarnold/ipxbox/network/pipe"
 )
 
 const maxConnectAttempts = 5

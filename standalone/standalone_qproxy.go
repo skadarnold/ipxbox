@@ -9,8 +9,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/fragglet/ipxbox/client/dosbox"
-	"github.com/fragglet/ipxbox/qproxy"
+	"github.com/skadarnold/ipxbox/client/dosbox"
+	"github.com/skadarnold/ipxbox/qproxy"
 )
 
 var (

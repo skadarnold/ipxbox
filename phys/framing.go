@@ -4,7 +4,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/fragglet/ipxbox/ipx"
+	"github.com/skadarnold/ipxbox/ipx"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
