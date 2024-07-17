@@ -91,9 +91,6 @@ func (c *Connection) handleEcho(msg []byte) {
 	// Send back the same identifier:
 	copy(reply[10:14], msg[10:14])
 	c.sendMessage(reply)
-
-	p.log("echo message %s",
-		msg)
 }
 
 func (c *Connection) Close() error {
@@ -128,6 +125,8 @@ func (c *Connection) startPPPSession(ctx context.Context, sendCallID uint16) {
 	c.ppp = ppp.NewSession(gre, node)
 	go func() {
 		err := c.ppp.Run(ctx)
+		p.log("log node %s",
+		node)
 		if err != nil {
 			// TODO: log error?
 		}
