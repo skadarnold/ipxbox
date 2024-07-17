@@ -16,7 +16,7 @@ const (
 
 	// maxAge is the maximum amount of time that we hold a frame for
 	// reassembly before giving up and flushing it.
-	maxAge = 10 * time.Second
+	maxAge = 20 * time.Second
 )
 
 type frameKey struct {
