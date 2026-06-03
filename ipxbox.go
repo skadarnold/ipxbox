@@ -16,6 +16,7 @@ import (
 	"github.com/fragglet/ipxbox/module/pptp"
 	"github.com/fragglet/ipxbox/module/qproxy"
 	"github.com/fragglet/ipxbox/module/server"
+	"github.com/fragglet/ipxbox/module/web"
 	"github.com/fragglet/ipxbox/network"
 	"github.com/fragglet/ipxbox/network/addressable"
 	"github.com/fragglet/ipxbox/network/filter"
@@ -72,12 +73,16 @@ func makeNetwork(ctx context.Context) (network.Network, network.Network) {
 	//  5. ReadPacket() by server, and transmit to client.
 	var net network.Network
 	net = ipxswitch.New()
+	// Always insert the tappable layer (it is a no-op when there are no taps),
+	// so optional consumers — the packet dump and the -web dashboard — can snoop
+	// traffic without further changes to the stack.
+	tappableLayer := tappable.Wrap(net)
+	net = tappableLayer
+	web.SetTapSource(tappableLayer)
 	if *dumpPackets != "" {
-		tappableLayer := tappable.Wrap(net)
 		w := makePcapWriter()
 		sink := phys.NewPcapgoSink(w, phys.FramerEthernetII)
 		go ipx.CopyPackets(ctx, tappableLayer.NewTap(), sink)
-		net = tappableLayer
 	}
 	if !*allowNetBIOS {
 		net = filter.Wrap(net)
@@ -94,6 +99,7 @@ func main() {
 		module.Optional(pptp.Module, enablePPTP),
 		bridge.Module,
 		qproxy.Module,
+		web.Module,
 		server.Module,
 	)
 
