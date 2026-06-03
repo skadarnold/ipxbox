@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fragglet/ipxbox/module"
+	"github.com/fragglet/ipxbox/module/web"
 	"github.com/fragglet/ipxbox/server"
 	"github.com/fragglet/ipxbox/server/dosbox"
 	"github.com/fragglet/ipxbox/server/uplink"
@@ -29,13 +30,17 @@ func (m *mod) Initialize() {
 }
 
 func (m *mod) Start(ctx context.Context, params *module.Parameters) error {
-	protocols := []server.Protocol{
-		&dosbox.Protocol{
-			Logger:        params.Logger,
-			Network:       params.Network,
-			KeepaliveTime: 5 * time.Second,
-		},
+	dosboxProto := &dosbox.Protocol{
+		Logger:        params.Logger,
+		Network:       params.Network,
+		KeepaliveTime: 5 * time.Second,
 	}
+	// If the web dashboard is enabled, let it observe client connect/RTT/
+	// disconnect events. Observer() is a no-op consumer when -web is off.
+	if obs, ok := web.Observer().(dosbox.ClientObserver); ok {
+		dosboxProto.Observer = obs
+	}
+	protocols := []server.Protocol{dosboxProto}
 	if *m.uplinkPassword != "" {
 		if params.Uplinkable == nil {
 			return fmt.Errorf("Sorry, a direct connection is needed to run an uplink server.")

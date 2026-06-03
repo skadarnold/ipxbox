@@ -25,17 +25,31 @@
   .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
   .card .label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
   .card .value { font-size:26px; font-weight:700; margin-top:4px; }
-  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  @media (max-width:760px){ .grid2 { grid-template-columns:1fr; } }
+  .stack { display:flex; flex-direction:column; gap:16px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:760px){ .row2 { grid-template-columns:1fr; } }
   .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  #feed { height:300px; overflow-y:auto; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; }
+  #feed div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:1px 0; }
+  #feed .ts { color:var(--muted); }
+  #feed .node-new { color:var(--ok); }
+  #feed .link-new { color:var(--accent); }
+  #feed .node-gone { color:var(--bad); }
   .panel h2 { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:0 0 10px; }
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  th { text-align:left; color:var(--muted); font-weight:500; font-size:11px; text-transform:uppercase; padding:4px 6px; }
-  td { padding:5px 6px; border-top:1px solid var(--line); }
+  /* Fixed layout + explicit widths so columns don't reflow when values change. */
+  table { width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed; }
+  th { text-align:left; color:var(--muted); font-weight:500; font-size:11px; text-transform:uppercase; padding:4px 6px; white-space:nowrap; }
+  td { padding:5px 6px; border-top:1px solid var(--line); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  col.c-node { width:80px; } col.c-ip { width:120px; } col.c-rtt { width:80px; }
+  col.c-traffic { width:auto; } col.c-up { width:64px; } col.c-sock { width:120px; } col.c-state { width:72px; }
+  td.num { font-variant-numeric:tabular-nums; }
   .pill { font-size:11px; padding:1px 7px; border-radius:10px; }
   .active { color:var(--accent); background:rgba(47,129,247,.12); }
   .idle   { color:var(--warn); background:rgba(210,153,34,.12); }
   .stale  { color:var(--muted); background:rgba(139,152,165,.12); }
+  .rtt-good { color:var(--ok); font-weight:600; }
+  .rtt-ok   { color:var(--warn); font-weight:600; }
+  .rtt-bad  { color:var(--bad); font-weight:600; }
   svg.topo { width:100%; height:300px; display:block; }
   .legend { font-size:11px; color:var(--muted); display:flex; gap:14px; margin-top:6px; flex-wrap:wrap; }
   .legend i { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:middle; }
@@ -51,27 +65,37 @@
 
 <main>
   <div class="cards">
-    <div class="card"><div class="label">Clients</div><div id="nNodes" class="value">0</div></div>
-    <div class="card"><div class="label">Active now</div><div id="nActive" class="value">0</div></div>
+    <div class="card"><div class="label">Clients</div><div id="nNodes" class="value">0</div><div id="nActiveSub" class="sub"></div></div>
     <div class="card"><div class="label">Links</div><div id="nEdges" class="value">0</div></div>
-    <div class="card"><div class="label">Packets seen</div><div id="nPkts" class="value">0</div></div>
+    <div class="card"><div class="label">Throughput</div><div id="thru" class="value">0</div><div id="thruSub" class="sub"></div></div>
+    <div class="card"><div class="label">Packets seen</div><div id="nPkts" class="value">0</div><div id="castSub" class="sub"></div></div>
   </div>
 
-  <div class="grid2">
+  <div class="stack">
     <div class="panel">
       <h2>Connected clients</h2>
       <table>
-        <thead><tr><th>Node</th><th>Packets</th><th>State</th></tr></thead>
-        <tbody id="roster"><tr><td colspan="3" class="sub">none yet</td></tr></tbody>
+        <colgroup>
+          <col class="c-node"><col class="c-ip"><col class="c-rtt"><col class="c-traffic">
+          <col class="c-up"><col class="c-sock"><col class="c-state">
+        </colgroup>
+        <thead><tr><th>Node</th><th>IP</th><th>RTT</th><th>Traffic</th><th>Up</th><th>Sockets</th><th>State</th></tr></thead>
+        <tbody id="roster"><tr><td colspan="7" class="sub">none yet</td></tr></tbody>
       </table>
     </div>
-    <div class="panel">
-      <h2>Topology (who is talking to whom)</h2>
-      <svg class="topo" id="graph" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="legend">
-        <span><i style="background:var(--accent)"></i>node</span>
-        <span><i style="background:var(--accent)"></i>active link</span>
-        <span><i style="background:var(--muted)"></i>idle/stale</span>
+    <div class="row2">
+      <div class="panel">
+        <h2>Topology (who is talking to whom)</h2>
+        <svg class="topo" id="graph" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>node</span>
+          <span><i style="background:var(--accent)"></i>active link</span>
+          <span><i style="background:var(--muted)"></i>idle/stale</span>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Activity</h2>
+        <div id="feed"><div class="sub">waiting for activity…</div></div>
       </div>
     </div>
   </div>
@@ -85,17 +109,33 @@ let topo = {nodes:[], edges:[]};
 function esc(s){ return String(s==null?"":s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 function shortNode(n){ return n ? n.slice(-5) : "?"; }
 
+function fmtBytes(b){ if(b>=1048576)return (b/1048576).toFixed(1)+"M"; if(b>=1024)return (b/1024).toFixed(1)+"K"; return (b||0)+"B"; }
+function fmtDur(s){ if(s>=3600)return Math.floor(s/3600)+"h"+Math.floor((s%3600)/60)+"m"; if(s>=60)return Math.floor(s/60)+"m"+(s%60)+"s"; return (s||0)+"s"; }
+function rttCell(ms){ if(!ms)return '<span class="sub">—</span>'; const c=ms<60?"rtt-good":(ms<150?"rtt-ok":"rtt-bad"); return `<span class="${c}">${ms} ms</span>`; }
+
 function render() {
-  const nodes = topo.nodes||[], edges = topo.edges||[];
-  $("nNodes").textContent = nodes.length;
-  $("nActive").textContent = nodes.filter(n=>n.liveness==="active").length;
-  $("nEdges").textContent = edges.length;
-  $("nPkts").textContent = nodes.reduce((a,n)=>a+(n.packets||0),0);
+  const nodes = topo.nodes||[], edges = topo.edges||[], t = topo.totals||{};
+  $("nNodes").textContent = t.nodes ?? nodes.length;
+  $("nActiveSub").textContent = (t.activeNodes||0) + " active";
+  $("nEdges").textContent = t.edges ?? edges.length;
+  $("thru").textContent = fmtBytes(t.byteRate||0) + "/s";
+  $("thruSub").textContent = (t.pktRate||0) + " pkt/s";
+  $("nPkts").textContent = t.packets||0;
+  $("castSub").textContent = `${t.unicasts||0} uni · ${t.broadcasts||0} bcast`;
 
   $("roster").innerHTML = nodes.length
-    ? nodes.map(n=>`<tr><td class="mono">${esc(n.node)}</td><td>${n.packets}</td>`+
-                   `<td><span class="pill ${n.liveness}">${n.liveness}</span></td></tr>`).join("")
-    : `<tr><td colspan="3" class="sub">none yet</td></tr>`;
+    ? nodes.map(n=>{
+        const traffic = `${n.packets} pkt · ${fmtBytes(n.bytes)}` + (n.byteRate?` · ${fmtBytes(n.byteRate)}/s`:"");
+        const socks = (n.sockets&&n.sockets.length) ? n.sockets.map(s=>"0x"+s.toString(16)).join(", ") : "—";
+        return `<tr><td class="mono">${esc(shortNode(n.node))}</td>`+
+               `<td class="mono">${esc(n.ip||"—")}</td>`+
+               `<td class="num">${rttCell(n.rttMs)}</td>`+
+               `<td class="num">${traffic}</td>`+
+               `<td class="num">${fmtDur(n.ageSec)}</td>`+
+               `<td class="mono">${esc(socks)}</td>`+
+               `<td><span class="pill ${n.liveness}">${n.liveness}</span></td></tr>`;
+      }).join("")
+    : `<tr><td colspan="7" class="sub">none yet</td></tr>`;
 
   drawGraph(nodes, edges);
 }
@@ -129,11 +169,25 @@ function setLive(s){ const el=$("live");
   else if(s==="off"){el.textContent="● disconnected";el.style.color="var(--bad)";}
   else{el.textContent="● connecting…";el.style.color="var(--muted)";} }
 
+let feedStarted = false;
+function addFeed(ev){
+  const el = $("feed");
+  if (!feedStarted) { el.innerHTML = ""; feedStarted = true; }
+  const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 30;
+  const d = document.createElement("div");
+  const ts = new Date(ev.tsMs).toLocaleTimeString();
+  d.innerHTML = `<span class="ts">${ts}</span> <span class="${ev.kind}">${esc(ev.text)}</span>`;
+  el.appendChild(d);
+  while (el.childElementCount > 300) el.removeChild(el.firstChild);
+  if (atBottom) el.scrollTop = el.scrollHeight;
+}
+
 (function connect(){
   const es = new EventSource("/events");
   es.onopen = ()=>setLive("on");
   es.onerror = ()=>setLive("off");
   es.addEventListener("topology", e => { topo = JSON.parse(e.data); render(); });
+  es.addEventListener("activity", e => addFeed(JSON.parse(e.data)));
 })();
 </script>
 </body>

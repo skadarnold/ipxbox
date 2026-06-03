@@ -22,6 +22,19 @@ var (
 	addrPingReply = [6]byte{0x02, 0xff, 0xff, 0xff, 0x00, 0x00}
 )
 
+// ClientObserver receives notifications about client lifecycle, for
+// monitoring/UI (e.g. learning each client's source UDP address, which is not
+// visible at the IPX layer). All methods may be called concurrently. It is
+// optional (Protocol.Observer may be nil); the core protocol does not depend on
+// it, keeping monitoring decoupled from the server.
+type ClientObserver interface {
+	// ClientConnected is called when a client registers, with its assigned IPX
+	// node address and its source UDP remote address.
+	ClientConnected(node ipx.Addr, remoteAddr net.Addr)
+	// ClientDisconnected is called when the client goes away.
+	ClientDisconnected(node ipx.Addr)
+}
+
 // Protocol is an implementation of the server.Protocol interface that
 // implements the dosbox protocol.
 type Protocol struct {
@@ -39,6 +52,10 @@ type Protocol struct {
 	// If not nil, log entries are written as clients connect and
 	// disconnect.
 	Logger *slog.Logger
+
+	// If not nil, receives client lifecycle + RTT notifications (for the web
+	// dashboard / monitoring). Optional; the protocol works the same without it.
+	Observer ClientObserver
 }
 
 func isRegistrationPacket(packet *ipx.Packet) bool {
@@ -75,8 +92,15 @@ func (p *Protocol) StartClient(ctx context.Context, inner ipx.ReadWriteCloser, r
 		ipxAttr(nodeAddr))
 	logger.Info("client connected")
 
+	if p.Observer != nil {
+		p.Observer.ClientConnected(nodeAddr, remoteAddr)
+	}
+
 	defer func() {
 		node.Close()
+		if p.Observer != nil {
+			p.Observer.ClientDisconnected(nodeAddr)
+		}
 		statsString := stats.Summary(node)
 		if statsString != "" {
 			logger.Info("client disconnected",

@@ -58,13 +58,29 @@ func (s *server) handleEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	send := func() {
+	sendTopology := func() {
 		if data, err := json.Marshal(s.tr.snapshot()); err == nil {
 			fmt.Fprintf(w, "event: topology\ndata: %s\n\n", data)
 			flusher.Flush()
 		}
 	}
-	send() // populate immediately
+
+	var lastSeq uint64
+	sendEvents := func() {
+		evs := s.tr.EventsSince(lastSeq)
+		for _, e := range evs {
+			if data, err := json.Marshal(e); err == nil {
+				fmt.Fprintf(w, "event: activity\ndata: %s\n\n", data)
+			}
+			lastSeq = e.Seq
+		}
+		if len(evs) > 0 {
+			flusher.Flush()
+		}
+	}
+
+	sendTopology()
+	sendEvents() // backfill recent activity so the feed isn't empty on load
 
 	ticker := time.NewTicker(1500 * time.Millisecond)
 	defer ticker.Stop()
@@ -73,7 +89,8 @@ func (s *server) handleEvents(w http.ResponseWriter, r *http.Request) {
 		case <-r.Context().Done():
 			return
 		case <-ticker.C:
-			send()
+			sendTopology()
+			sendEvents()
 		}
 	}
 }

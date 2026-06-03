@@ -1,4 +1,5 @@
 *.exe
+*.exe~
 ipxbox
 ipxbox_uplink
 standalone_ipxpkt
